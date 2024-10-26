@@ -11,6 +11,8 @@ struct world
     bool grid[GRID_SIZE * GRID_SIZE];
 };
 
+void world_render(struct world* world);
+
 int main(void)
 {
     InitWindow(800, 800, "sand");
@@ -27,24 +29,29 @@ int main(void)
     {
         BeginDrawing();
             ClearBackground(BLACK);
-            for (int j = 0; j < GRID_SIZE; ++j)
-            {
-                for (int i = 0; i < GRID_SIZE; ++i)
-                {
-                    Color col;
-                    if (the_world.grid[(j * GRID_SIZE) + i])
-                    {
-                        col = BLACK;
-                    } else
-                    {
-                        col = RAYWHITE;
-                    }
-
-                    DrawRectangle(i * PART_WIDTH, j * PART_WIDTH, PART_WIDTH, PART_WIDTH, col);
-                }
-            }
+            world_render(&the_world);
         EndDrawing();
     }
     CloseWindow();
     return EXIT_SUCCESS;
+}
+
+void world_render(struct world* world)
+{
+    for (int j = 0; j < GRID_SIZE; ++j)
+    {
+        for (int i = 0; i < GRID_SIZE; ++i)
+        {
+            Color col;
+            if (world->grid[(j * GRID_SIZE) + i])
+            {
+                col = BLACK;
+            } else
+            {
+                col = RAYWHITE;
+            }
+
+            DrawRectangle(i * PART_WIDTH, j * PART_WIDTH, PART_WIDTH, PART_WIDTH, col);
+        }
+    }
 }
