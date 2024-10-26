@@ -3,6 +3,19 @@ set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
 project(sand
         VERSION 0.0.1)
 
+include(FetchContent)
+set(FETCHCONTENT_QUIET FALSE)
+
+FetchContent_Declare(
+    raylib
+    GIT_REPOSITORY "https://github.com/raysan5/raylib.git"
+    GIT_TAG "master"
+    GIT_PROGRESS TRUE
+    GIT_SHALLOW TRUE
+)
+
+FetchContent_MakeAvailable(raylib)
+
 add_executable(sand
     src/main.c
 )
@@ -11,8 +24,9 @@ target_include_directories(sand PRIVATE
     inc/
 )
 
-# target_link_libraries(sand PRIVATE
-# )
+target_link_libraries(sand PRIVATE
+    raylib
+)
 
 find_program(CLANG_TIDY_EXE NAMES "clang-tidy")
 set(CLANG_TIDY_COMMAND "${CLANG_TIDY_EXE}")
