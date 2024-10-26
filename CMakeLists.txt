@@ -1,5 +1,4 @@
 cmake_minimum_required(VERSION 3.29)
-set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
 project(sand
         VERSION 0.0.1)
 
@@ -18,6 +17,7 @@ FetchContent_MakeAvailable(raylib)
 
 add_executable(sand
     src/main.c
+    src/world.c
 )
 
 target_include_directories(sand PRIVATE
