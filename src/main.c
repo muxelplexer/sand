@@ -18,7 +18,7 @@ int main(void)
     the_world->grid[101] = true;
     the_world->grid[2050] = true;
 
-    SetTargetFPS(60);
+    SetTargetFPS(120);
     while(!WindowShouldClose())
     {
         BeginDrawing();
@@ -27,6 +27,8 @@ int main(void)
         EndDrawing();
         world_update(the_world);
     }
+
+    free(the_world);
     CloseWindow();
     return EXIT_SUCCESS;
 }
