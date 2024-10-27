@@ -1,6 +1,7 @@
 #include "world.h"
 #include "raylib.h"
 #include "assert.h"
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -99,22 +100,51 @@ void world_update(struct world* world)
     world_cell_commit(world);
 }
 
+void world_handle_input(struct world* world)
+{
+    if (IsMouseButtonDown(MOUSE_BUTTON_LEFT))
+    {
+        Vector2 mouse_pos = GetMousePosition();
+        float ratio_x = (float)GetRenderWidth() / GRID_SIZE;
+        float ratio_y = (float)GetRenderHeight() / GRID_SIZE;
+        int x = (int)(mouse_pos.x / ratio_x);
+        if (x >= 100)
+            x = 99;
+        else if (x < 0)
+            x = 0;
+
+        int y = (int)(mouse_pos.y / ratio_y);
+        if (y >= 100)
+            y = 99;
+        else if (y < 0)
+            y = 0;
+
+#ifndef NDEBUG
+        printf("Mouse Position Before: %f:%f\n", mouse_pos.x, mouse_pos.y);
+        printf("Mouse Position: %d:%d\n", x, y);
+#endif
+        world_cell_set(world, x, y, true);
+    }
+}
+
 void world_render(struct world* world)
 {
     for (int j = 0; j < GRID_SIZE; ++j)
     {
         for (int i = 0; i < GRID_SIZE; ++i)
         {
+            int ratio_x = GetRenderWidth() / GRID_SIZE;
+            int ratio_y = GetRenderHeight() / GRID_SIZE;
             Color col;
             if (!world_cell_is_empty(world, i, j))
             {
-                col = BLACK;
+                col = YELLOW;
             } else
             {
                 col = RAYWHITE;
             }
 
-            DrawRectangle(i * PART_WIDTH + (PART_WIDTH / 2), j * PART_WIDTH + (PART_WIDTH / 2), PART_WIDTH, PART_WIDTH, col);
+            DrawRectangle(i * ratio_x, j * ratio_y, ratio_x, ratio_y, col);
         }
     }
 }

@@ -26,4 +26,5 @@ struct world
 };
 
 void world_update(struct world* world);
+void world_handle_input(struct world* world);
 void world_render(struct world* world);
