@@ -8,6 +8,7 @@
 #include <string.h>
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
+#include <time.h>
 
 #include "world.h"
 
@@ -35,6 +36,7 @@ SDL_AppResult SDL_AppInit(void** appstate, [[maybe_unused]] int argc, [[maybe_un
 
     *appstate = world_init(window, renderer);
     SDL_Log("sand initialized successfully");
+    srand((unsigned int)time(NULL));
 
     return SDL_APP_CONTINUE;
 }
@@ -63,9 +65,13 @@ SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event)
 SDL_AppResult SDL_AppIterate(void* appstate)
 {
     struct world* world = (struct world*)appstate;
+    static bool init = false;
 
-    SDL_SetRenderDrawColor(world->renderer, 0, 0, 0, 0xFF);
-    SDL_RenderClear(world->renderer);
+    if (!init)
+    {
+        SDL_SetRenderDrawColor(world->renderer, 0, 0, 0, 0xFF);
+        SDL_RenderClear(world->renderer);
+    }
 
     world_render(world);
 
