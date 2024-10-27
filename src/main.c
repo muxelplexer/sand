@@ -13,7 +13,7 @@
 #include "world.h"
 
 
-SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
+SDL_AppResult SDL_AppInit(void** appstate, [[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
 {
     if (!SDL_Init(SDL_INIT_VIDEO)) {
         return SDL_APP_FAILURE;

@@ -11,8 +11,6 @@
 #include <string.h>
 #include <SDL3/SDL.h>
 
-#define PART_WIDTH 10
-
 bool* world_cell(struct world* world, const int x, const int y)
 {
     if (x >= GRID_SIZE || x < 0) return nullptr;
@@ -88,15 +86,15 @@ void world_update(struct world* world)
         float x, y;
         SDL_GetMouseState(&x, &y);
         x /= ratio_x;
-        if (x >= 100)
-            x = 99;
+        if (x >= GRID_SIZE)
+            x = GRID_SIZE - 1;
         else if (x < 0)
             x = 0;
 
         y /= ratio_y;
 
-        if (y >= 100)
-            y = 99;
+        if (y >= GRID_SIZE)
+            y = GRID_SIZE - 1;
         else if (y < 0)
             y = 0;
 
