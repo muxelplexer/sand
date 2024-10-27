@@ -1,5 +1,6 @@
 #include "world.h"
 #include "assert.h"
+#include "cell.h"
 #include <SDL3/SDL_events.h>
 #include <SDL3/SDL_mouse.h>
 #include <SDL3/SDL_oldnames.h>
@@ -11,7 +12,7 @@
 #include <string.h>
 #include <SDL3/SDL.h>
 
-bool* world_cell(struct world* world, const int x, const int y)
+cell_t* world_cell(struct world* world, const int x, const int y)
 {
     if (x >= GRID_SIZE || x < 0) return nullptr;
     else if(y >= GRID_SIZE || y < 0) return nullptr;
@@ -22,14 +23,14 @@ bool world_cell_is_empty(struct world* world, const int x, const int y)
 {
     if (x >= GRID_SIZE || x < 0) return false;
     else if(y >= GRID_SIZE || y < 0) return false;
-    else return !(*world_cell(world, x, y));
+    else return (*world_cell(world, x, y)).type == CT_EMPTY;
 }
 
-void world_cell_set(struct world* world, const int x, const int y, const bool state)
+void world_cell_set(struct world* world, const int x, const int y, const enum cell_type type)
 {
-    bool* cell = world_cell(world, x, y);
+    cell_t* cell = world_cell(world, x, y);
     assert(cell);
-    *cell = state;
+    cell->type = type;
 }
 
 
@@ -74,8 +75,8 @@ void world_cell_commit(struct world* world)
     while (change)
     {
         struct world_change* temp = change->next;
-        world_cell_set(world, change->src_pos.x, change->src_pos.y, false);
-        world_cell_set(world, change->dst_pos.x, change->dst_pos.y, true);
+        world_cell_set(world, change->src_pos.x, change->src_pos.y, CT_EMPTY);
+        world_cell_set(world, change->dst_pos.x, change->dst_pos.y, CT_SAND);
         free(change);
         change = temp;
     }
@@ -114,7 +115,7 @@ void world_update(struct world* world)
 #ifndef NDEBUG
         printf("Mouse Position: %d:%d\n", x, y);
 #endif
-        world_cell_set(world, (int)x, (int)y, true);
+        world_cell_set(world, (int)x, (int)y, CT_SAND);
     }
 
     for (int j = 0; j < GRID_SIZE; ++j)

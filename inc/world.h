@@ -1,5 +1,6 @@
 #pragma once
 #include <SDL3/SDL_init.h>
+#include "cell.h"
 
 #define GRID_SIZE  100
 
@@ -24,9 +25,10 @@ struct world_change_list
 struct SDL_Window;
 struct SDL_Renderer;
 union SDL_Event;
+
 struct world
 {
-    bool grid[GRID_SIZE * GRID_SIZE];
+    cell_t grid[GRID_SIZE * GRID_SIZE];
     struct world_change_list changes;
     struct SDL_Window* window;
     struct SDL_Renderer* renderer;
