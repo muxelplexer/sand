@@ -1,7 +1,8 @@
 #pragma once
-
 #include <SDL3/SDL_init.h>
+
 #define GRID_SIZE  100
+
 struct world_pos
 {
     int x;
@@ -33,6 +34,7 @@ struct world
     SDL_AppResult quit;
 };
 
+struct world* world_init(struct SDL_Window* win, struct SDL_Renderer* renderer);
 void world_update(struct world* world);
 void world_handle_input(struct world* world, union SDL_Event* event);
 void world_render(struct world* world);

@@ -32,6 +32,19 @@ void world_cell_set(struct world* world, const int x, const int y, const bool st
     *cell = state;
 }
 
+
+
+struct world* world_init(struct SDL_Window* win, struct SDL_Renderer* renderer)
+{
+    struct world* the_world = malloc(sizeof(struct world));
+    memset(the_world, 0, sizeof(struct world));
+
+    the_world->window = win;
+    the_world->renderer = renderer;
+    the_world->quit = SDL_APP_CONTINUE;
+    return the_world;
+}
+
 void world_cell_move(struct world* world, const struct world_pos src, const struct world_pos dst)
 {
     struct world_change_list* list = &world->changes;

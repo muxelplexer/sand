@@ -1,7 +1,6 @@
 #include <SDL3/SDL_events.h>
 #include <SDL3/SDL_init.h>
 #include <SDL3/SDL_log.h>
-#include <SDL3/SDL_oldnames.h>
 #include <SDL3/SDL_render.h>
 #include <SDL3/SDL_video.h>
 #include <stdint.h>
@@ -34,13 +33,7 @@ SDL_AppResult SDL_AppInit(void** appstate, [[maybe_unused]] int argc, [[maybe_un
         return SDL_APP_FAILURE;
     }
 
-    *appstate = malloc(sizeof(struct world));
-    struct world* the_world = (struct world*)*appstate;
-    memset(the_world, 0, sizeof(struct world));
-
-    the_world->window = window;
-    the_world->renderer = renderer;
-    the_world->quit = SDL_APP_CONTINUE;
+    *appstate = world_init(window, renderer);
     SDL_Log("sand initialized successfully");
 
     return SDL_APP_CONTINUE;
