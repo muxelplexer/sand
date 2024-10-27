@@ -17,6 +17,7 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(SDL)
 
 add_executable(sand
+    src/cell.c
     src/main.c
     src/world.c
 )

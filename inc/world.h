@@ -40,3 +40,5 @@ struct world* world_init(struct SDL_Window* win, struct SDL_Renderer* renderer);
 void world_update(struct world* world);
 void world_handle_input(struct world* world, union SDL_Event* event);
 void world_render(struct world* world);
+void world_cell_move(struct world* world, const struct world_pos src, const struct world_pos dst);
+bool world_cell_is_empty(struct world* world, const int x, const int y);

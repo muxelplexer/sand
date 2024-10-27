@@ -19,6 +19,11 @@ cell_t* world_cell(struct world* world, const int x, const int y)
     else return &world->grid[(y * GRID_SIZE) + x];
 }
 
+cell_type_t world_cell_type(struct world* world, const int x, const int y)
+{
+    return (*world_cell(world, x, y)).type;
+}
+
 bool world_cell_is_empty(struct world* world, const int x, const int y)
 {
     if (x >= GRID_SIZE || x < 0) return false;
@@ -75,8 +80,12 @@ void world_cell_commit(struct world* world)
     while (change)
     {
         struct world_change* temp = change->next;
-        world_cell_set(world, change->src_pos.x, change->src_pos.y, CT_EMPTY);
-        world_cell_set(world, change->dst_pos.x, change->dst_pos.y, CT_SAND);
+        cell_type_t src_type = world_cell_type(world, change->src_pos.x, change->src_pos.y);
+        cell_type_t dst_type = world_cell_type(world, change->dst_pos.x, change->dst_pos.y);
+
+        world_cell_set(world, change->src_pos.x, change->src_pos.y, dst_type);
+        world_cell_set(world, change->dst_pos.x, change->dst_pos.y, src_type);
+
         free(change);
         change = temp;
     }
@@ -124,26 +133,7 @@ void world_update(struct world* world)
         {
             if (!world_cell_is_empty(world, i, j))
             {
-                bool below_cell = world_cell_is_empty(world, i, j + 1);
-                bool lb_cell = world_cell_is_empty(world, i - 1, j + 1);
-                bool rb_cell = world_cell_is_empty(world, i + 1, j + 1);
-
-                if (below_cell)
-                {
-                    const struct world_pos src = {i, j};
-                    const struct world_pos dst = {i, j + 1};
-                    world_cell_move(world, src, dst);
-                } else if (lb_cell)
-                {
-                    const struct world_pos src = {i, j};
-                    const struct world_pos dst = {i - 1, j + 1};
-                    world_cell_move(world, src, dst);
-                } else if (rb_cell)
-                {
-                    const struct world_pos src = {i, j};
-                    const struct world_pos dst = {i + 1, j + 1};
-                    world_cell_move(world, src, dst);
-                }
+                cell_action_sand(world, i, j);
             }
         }
     }
