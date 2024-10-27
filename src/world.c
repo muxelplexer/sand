@@ -3,7 +3,6 @@
 #include "cell.h"
 #include <SDL3/SDL_events.h>
 #include <SDL3/SDL_mouse.h>
-#include <SDL3/SDL_oldnames.h>
 #include <SDL3/SDL_rect.h>
 #include <SDL3/SDL_render.h>
 #include <SDL3/SDL_video.h>
@@ -21,7 +20,9 @@ cell_t* world_cell(struct world* world, const int x, const int y)
 
 cell_type_t world_cell_type(struct world* world, const int x, const int y)
 {
-    return (*world_cell(world, x, y)).type;
+    if (x >= GRID_SIZE || x < 0) return CT_NONE;
+    else if(y >= GRID_SIZE || y < 0) return CT_NONE;
+    else return (*world_cell(world, x, y)).type;
 }
 
 bool world_cell_is_empty(struct world* world, const int x, const int y)
@@ -35,6 +36,7 @@ void world_cell_set(struct world* world, const int x, const int y, const enum ce
 {
     cell_t* cell = world_cell(world, x, y);
     assert(cell);
+    assert(cell->type != CT_NONE);
     cell->type = type;
 }
 
@@ -48,6 +50,7 @@ struct world* world_init(struct SDL_Window* win, struct SDL_Renderer* renderer)
     the_world->window = win;
     the_world->renderer = renderer;
     the_world->quit = SDL_APP_CONTINUE;
+    the_world->spawn_type = CT_SAND;
     return the_world;
 }
 
@@ -82,9 +85,11 @@ void world_cell_commit(struct world* world)
         struct world_change* temp = change->next;
         cell_type_t src_type = world_cell_type(world, change->src_pos.x, change->src_pos.y);
         cell_type_t dst_type = world_cell_type(world, change->dst_pos.x, change->dst_pos.y);
-
-        world_cell_set(world, change->src_pos.x, change->src_pos.y, dst_type);
-        world_cell_set(world, change->dst_pos.x, change->dst_pos.y, src_type);
+        if (dst_type != CT_NONE)
+        {
+            world_cell_set(world, change->src_pos.x, change->src_pos.y, dst_type);
+            world_cell_set(world, change->dst_pos.x, change->dst_pos.y, src_type);
+        }
 
         free(change);
         change = temp;
@@ -122,19 +127,27 @@ void world_update(struct world* world)
             y = 0;
 
 #ifndef NDEBUG
-        printf("Mouse Position: %d:%d\n", x, y);
+        printf("Mouse Position: %f:%f\n", x, y);
 #endif
-        world_cell_set(world, (int)x, (int)y, CT_SAND);
+        world_cell_set(world, (int)x, (int)y, world->spawn_type);
     }
 
     for (int j = 0; j < GRID_SIZE; ++j)
     {
         for (int i = 0; i < GRID_SIZE; ++i)
         {
-            if (!world_cell_is_empty(world, i, j))
+            cell_type_t cell_type = world_cell_type(world, i, j);
+            switch (cell_type)
             {
+            case CT_WATER:
+                cell_action_water(world, i, j);
+                break;
+            case CT_SAND:
                 cell_action_sand(world, i, j);
-            }
+                break;
+            default:
+                break;
+            };
         }
     }
     world_cell_commit(world);
@@ -142,15 +155,25 @@ void world_update(struct world* world)
 
 void world_handle_input(struct world* world, union SDL_Event* event)
 {
-
-    if (event->type == SDL_EVENT_MOUSE_BUTTON_DOWN)
+    if (event->type == SDL_EVENT_KEY_DOWN)
     {
         world->button_pressed = true;
-    } else if (event->type == SDL_EVENT_MOUSE_BUTTON_UP)
+        switch(event->key.key)
+        {
+        case SDLK_W:
+            world->spawn_type = CT_WATER;
+            break;
+        case SDLK_S:
+            world->spawn_type = CT_SAND;
+            break;
+        default:
+            break;
+        };
+    }
+    if (event->type == SDL_EVENT_KEY_UP)
     {
         world->button_pressed = false;
     }
-
 }
 
 void world_render(struct world* world)
@@ -165,15 +188,22 @@ void world_render(struct world* world)
             {
                 SDL_Log("Could not get window size - will not render.");
             }
+
             float ratio_x = (float)scr_w / (float)GRID_SIZE;
             float ratio_y = (float)scr_h / (float)GRID_SIZE;
-            if (!world_cell_is_empty(world, i, j))
+            cell_type_t cell_type = world_cell_type(world, i, j);
+            switch (cell_type)
             {
-                SDL_SetRenderDrawColor(world->renderer, 0, 255, 255, 255);
-            } else
-            {
+            case CT_WATER:
+                SDL_SetRenderDrawColor(world->renderer, 0x00, 0xb2, 0xFF, 255);
+                break;
+            case CT_SAND:
+                SDL_SetRenderDrawColor(world->renderer, 0xc2, 0xb2, 0x80, 255);
+                break;
+            default:
                 SDL_SetRenderDrawColor(world->renderer, 0, 0, 0, 255);
-            }
+                break;
+            };
 
             SDL_FRect rect = {
                 (float)i * ratio_x,
@@ -182,7 +212,7 @@ void world_render(struct world* world)
                 (float)ratio_y
             };
 
-            SDL_RenderRect(world->renderer, &rect);
+            SDL_RenderFillRect(world->renderer, &rect);
         }
     }
 }
