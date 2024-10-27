@@ -1,9 +1,15 @@
 #include "world.h"
-#include "raylib.h"
 #include "assert.h"
+#include <SDL3/SDL_events.h>
+#include <SDL3/SDL_mouse.h>
+#include <SDL3/SDL_oldnames.h>
+#include <SDL3/SDL_rect.h>
+#include <SDL3/SDL_render.h>
+#include <SDL3/SDL_video.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <SDL3/SDL.h>
 
 #define PART_WIDTH 10
 
@@ -68,6 +74,38 @@ void world_cell_commit(struct world* world)
 
 void world_update(struct world* world)
 {
+    if (world->button_pressed)
+    {
+        int w, h;
+
+        if (!SDL_GetWindowSize(world->window, &w, &h))
+        {
+            SDL_Log("Could not get window size - will not render.");
+        }
+        float ratio_x = (float)w / GRID_SIZE;
+        float ratio_y = (float)h / GRID_SIZE;
+
+        float x, y;
+        SDL_GetMouseState(&x, &y);
+        x /= ratio_x;
+        if (x >= 100)
+            x = 99;
+        else if (x < 0)
+            x = 0;
+
+        y /= ratio_y;
+
+        if (y >= 100)
+            y = 99;
+        else if (y < 0)
+            y = 0;
+
+#ifndef NDEBUG
+        printf("Mouse Position: %d:%d\n", x, y);
+#endif
+        world_cell_set(world, (int)x, (int)y, true);
+    }
+
     for (int j = 0; j < GRID_SIZE; ++j)
     {
         for (int i = 0; i < GRID_SIZE; ++i)
@@ -100,31 +138,17 @@ void world_update(struct world* world)
     world_cell_commit(world);
 }
 
-void world_handle_input(struct world* world)
+void world_handle_input(struct world* world, union SDL_Event* event)
 {
-    if (IsMouseButtonDown(MOUSE_BUTTON_LEFT))
+
+    if (event->type == SDL_EVENT_MOUSE_BUTTON_DOWN)
     {
-        Vector2 mouse_pos = GetMousePosition();
-        float ratio_x = (float)GetRenderWidth() / GRID_SIZE;
-        float ratio_y = (float)GetRenderHeight() / GRID_SIZE;
-        int x = (int)(mouse_pos.x / ratio_x);
-        if (x >= 100)
-            x = 99;
-        else if (x < 0)
-            x = 0;
-
-        int y = (int)(mouse_pos.y / ratio_y);
-        if (y >= 100)
-            y = 99;
-        else if (y < 0)
-            y = 0;
-
-#ifndef NDEBUG
-        printf("Mouse Position Before: %f:%f\n", mouse_pos.x, mouse_pos.y);
-        printf("Mouse Position: %d:%d\n", x, y);
-#endif
-        world_cell_set(world, x, y, true);
+        world->button_pressed = true;
+    } else if (event->type == SDL_EVENT_MOUSE_BUTTON_UP)
+    {
+        world->button_pressed = false;
     }
+
 }
 
 void world_render(struct world* world)
@@ -133,18 +157,30 @@ void world_render(struct world* world)
     {
         for (int i = 0; i < GRID_SIZE; ++i)
         {
-            int ratio_x = GetRenderWidth() / GRID_SIZE;
-            int ratio_y = GetRenderHeight() / GRID_SIZE;
-            Color col;
+            int scr_w;
+            int scr_h;
+            if (!SDL_GetWindowSize(world->window, &scr_w, &scr_h))
+            {
+                SDL_Log("Could not get window size - will not render.");
+            }
+            float ratio_x = (float)scr_w / (float)GRID_SIZE;
+            float ratio_y = (float)scr_h / (float)GRID_SIZE;
             if (!world_cell_is_empty(world, i, j))
             {
-                col = YELLOW;
+                SDL_SetRenderDrawColor(world->renderer, 0, 255, 255, 255);
             } else
             {
-                col = RAYWHITE;
+                SDL_SetRenderDrawColor(world->renderer, 0, 0, 0, 255);
             }
 
-            DrawRectangle(i * ratio_x, j * ratio_y, ratio_x, ratio_y, col);
+            SDL_FRect rect = {
+                (float)i * ratio_x,
+                (float)j * ratio_y,
+                (float)ratio_x,
+                (float)ratio_y
+            };
+
+            SDL_RenderRect(world->renderer, &rect);
         }
     }
 }

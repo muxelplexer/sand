@@ -28,6 +28,7 @@ target_include_directories(sand PRIVATE
 target_link_libraries(sand PRIVATE
     SDL3::SDL3
 )
+target_compile_definitions(sand PUBLIC SDL_MAIN_USE_CALLBACKS)
 
 find_program(CLANG_TIDY_EXE NAMES "clang-tidy")
 set(CLANG_TIDY_COMMAND "${CLANG_TIDY_EXE}")
