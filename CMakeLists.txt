@@ -6,14 +6,15 @@ include(FetchContent)
 set(FETCHCONTENT_QUIET FALSE)
 
 FetchContent_Declare(
-    raylib
-    GIT_REPOSITORY "https://github.com/raysan5/raylib.git"
-    GIT_TAG "master"
-    GIT_PROGRESS TRUE
+    SDL
+    GIT_REPOSITORY https://github.com/libsdl-org/SDL.git
+    GIT_TAG main  # Replace this with a particular git tag or git hash
     GIT_SHALLOW TRUE
+    GIT_PROGRESS TRUE
+    SYSTEM
 )
 
-FetchContent_MakeAvailable(raylib)
+FetchContent_MakeAvailable(SDL)
 
 add_executable(sand
     src/main.c
@@ -25,7 +26,7 @@ target_include_directories(sand PRIVATE
 )
 
 target_link_libraries(sand PRIVATE
-    raylib
+    SDL3::SDL3
 )
 
 find_program(CLANG_TIDY_EXE NAMES "clang-tidy")
